@@ -1,0 +1,60 @@
+title Finalizacion y Creacion de Batalla
+
+participant jugador
+participant sistema
+participant campania
+participant batalla
+participant personaje
+participant party
+
+autoactivation on
+
+campania<-sistema:solicitarResultadoBatalla()
+campania->batalla:resultadoBatalla()
+batalla -->campania:resultadoBatalla
+sistema<--campania:solitudCompleta
+
+campania<-sistema:solicitarFinalizarBatalla()
+campania->batalla:finalizarBatalla()
+batalla-->campania:batallaFinalizada
+campania-->sistema:solicitudCompleta
+
+personaje<-sistema:subirNivel()
+sistema<--personaje:nivelActual(int)
+
+jugador<-sistema:darRecompensas()
+sistema<--jugador:recibirRecompensas()
+
+campania<-sistema:batallaSiguiente()
+sistema<--campania:batallaSiguiente(bool)
+
+alt [batallaSiguiente = True]
+  sistema->party:curarAliados()
+  party-->sistema:aliadosCurados
+  jugador<-sistema:seleccionarMenu()
+  sistema<--jugador:seleccionarMenu(int)
+  
+  alt [seleccionarMenu = 0]
+    sistema->campania:guardarCampania()
+    campania-->sistema:campaniaGuardada
+    sistema->jugador:menuPrincipal()
+   
+   else [seleccionarMenu=1]
+    campania<-sistema:continuarCampania()
+    campania->batalla:crearBatalla(enemigos)
+    batalla-->campania:batallaLista
+    campania-->sistema:campaniaLista
+    
+    sistema->campania:solicitudCargarBatalla()
+    batalla<-campania:cargarBatalla()
+    batalla-->campania:batallaCargada
+    sistema<--campania:confirmacionBatalla
+    
+    end
+  else [batallaSiguiente = False]
+    sistema->campania:finalizarCampania()
+    campania-->sistema:campaniaFinalizada
+    sistema->jugador:menuFinalizacionCampania()
+    jugador-->sistema:menuPrincipal
+    
+end

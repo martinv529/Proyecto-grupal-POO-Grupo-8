@@ -1,0 +1,50 @@
+title Turno Jugador
+
+participant jugador
+participant sistema
+participant soldado aliado
+participant soldado enemigo
+
+
+autoactivation on
+
+jugador<--sistema: elegirAtaque(int)
+
+alt [elegirAtaque = 1]
+  jugador ->sistema: ataque()
+  sistema -> soldado aliado: preguntaDaño()
+  sistema<--soldado aliado: cantDaño(int)
+  sistema ->soldado enemigo: dañoRecibido(int)
+  sistema <-- soldado enemigo: vidaRestante(int)
+  
+  opt [vidaRestante = 0]
+  sistema->soldado enemigo: eliminado()
+  sistema <--soldado enemigo: confirmación()
+  end
+  sistema --> jugador: estadoTurno()
+
+else [elegirAtaque = 2]
+  jugador ->sistema: defender()
+  sistema ->soldado aliado: estadoDefensa(true)
+  
+  
+else [elegirAtaque = 3]
+  jugador ->sistema: habilidad()
+  sistema ->soldado aliado: cantEnergía(bool)
+  soldado aliado--> sistema: cantEnergía(bool)
+  alt [cantEnergía = true]
+    sistema ->soldado aliado: cantDañoEspecial(int)
+    sistema <--soldado aliado: cantDañoEspecial(int)
+    sistema -> soldado enemigo: ataqueEspecial()
+    sistema <--soldado enemigo: vidaRestante(int)
+    opt [vidaRestante = 0]
+    sistema->soldado enemigo: eliminado()
+    sistema <--soldado enemigo: confirmación()
+    end
+    
+  sistema --> jugador: estadoTurno()
+  
+  else [cantEnergía = false]
+    sistema-->jugador: ataqueDenegado()
+  end
+end
